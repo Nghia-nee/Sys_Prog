@@ -1,0 +1,1 @@
+print("hello, this excutable file stand for an virus file")
