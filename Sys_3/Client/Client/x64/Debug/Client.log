@@ -1,0 +1,8 @@
+﻿  ClientDlg.cpp
+C:\Users\ThinkPad\Desktop\SysProg_3\Client\Client\ClientDlg.cpp(183,54): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/ClientDlg.cpp')
+  
+C:\Users\ThinkPad\Desktop\SysProg_3\Client\Client\ClientDlg.cpp(284,54): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/ClientDlg.cpp')
+  
+  Client.vcxproj -> C:\Users\ThinkPad\Desktop\SysProg_3\Client\x64\Debug\Client.exe
